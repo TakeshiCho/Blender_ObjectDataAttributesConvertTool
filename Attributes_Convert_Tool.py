@@ -6,7 +6,7 @@ bl_info = {
     "location": "PROPERTIES > OBJECT DATA > ATTRIBUTES TO UVS",
     "description": "Convert the Attributes in face corner to the UVs",
     "warning": "It is not a stable version.",
-    "doc_url": "",
+    "doc_url": "https://github.com/TakeshiCho/Blender_ObjectDataAttributesConvertTool",
     "category": "Attributes Convert Tool",
 }
 
