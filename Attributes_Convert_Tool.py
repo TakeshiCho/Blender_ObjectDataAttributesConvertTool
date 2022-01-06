@@ -56,17 +56,19 @@ class Attributes_To_UVs(bpy.types.Panel):
         obj = context.object
         mesh_data = obj.data
         
-        attri_name = mesh_data.attributes.active.name  
-        uv_name = mesh_data.uv_layers.active.name
-
-        row = layout.row()
-        row.label(text = 'Source Attribute: '+attri_name, icon='SNAP_VERTEX')      
+        if mesh_data.attributes.active and mesh_data.uv_layers.active:
+            
+            attri_name = mesh_data.attributes.active.name  
+            uv_name = mesh_data.uv_layers.active.name
         
-        row = layout.row()
-        row.label(text = 'Destination UV: '+uv_name, icon='GROUP_UVS')
-        
-        row = layout.row()
-        row.operator("object.attributes_bake")
+            row = layout.row()
+            row.label(text = 'Source Attribute: '+attri_name, icon='SNAP_VERTEX')      
+            
+            row = layout.row()
+            row.label(text = 'Destination UV: '+uv_name, icon='GROUP_UVS')
+            
+            row = layout.row()
+            row.operator("object.attributes_bake")
         
 def menu_func(self, context):
     self.layout.operator(Attributes_Bake.bl_idname, text=Attributes_Bake.bl_label)
