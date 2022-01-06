@@ -6,4 +6,9 @@ It is a Blender Tool which can convert the Object Data Attributes in face corner
 * Platform：PC
 
 ### Usage
-* Location： PROPERTIES > OBJECT DATA > ATTRIBUTES TO UVS
+* Location： PROPERTIES > OBJECT DATA > ATTRIBUTES TO UVS  
+  Select Source and Destination Attributes in PROPERTIES panel, Click the "Bake".
+
+### Update
+* 01 / 6 / 2022：  
+  Supported override UVs with Face Corner Vector Attributes.
