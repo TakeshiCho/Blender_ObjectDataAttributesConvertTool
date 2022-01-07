@@ -12,3 +12,6 @@ It is a Blender Tool which can convert the Object Data Attributes in face corner
 ### Update
 * 01 / 6 / 2022：  
   Supported override UVs with Face Corner Vector Attributes.
+  
+### Develop Plan
+* Support vertex group weight write in uv channels or vertex color alpha channel.
