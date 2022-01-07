@@ -70,18 +70,16 @@ class Attributes_To_UVs(bpy.types.Panel):
             row = layout.row()
             row.operator("object.attributes_bake")
         
-def menu_func(self, context):
-    self.layout.operator(Attributes_Bake.bl_idname, text=Attributes_Bake.bl_label)
+#def menu_func(self, context):
+#    self.layout.operator(Attributes_Bake.bl_idname, text=Attributes_Bake.bl_label)
 
 def register():
     bpy.utils.register_class(Attributes_To_UVs)
     bpy.utils.register_class(Attributes_Bake)
-    bpy.types.VIEW3D_MT_object.append(menu_func)
 
 def unregister():
     bpy.utils.unregister_class(Attributes_To_UVs)
     bpy.utils.unregister_class(Attributes_Bake)
-    bpy.types.VIEW3D_MT_object.remove(menu_func)
 
 if __name__ == "__main__":
     register()
