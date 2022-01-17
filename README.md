@@ -1,4 +1,4 @@
-# Blender_ObjectDataAttributesConvertTool
+# Blender Object Data Attributes Convert Tool
 It is a Blender Tool which can convert the Object Data Attributes in face corner to the UVs or Vertex Color.
 
 ### Dependence Environment
