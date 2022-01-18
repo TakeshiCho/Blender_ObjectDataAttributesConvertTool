@@ -1,6 +1,6 @@
 bl_info = {
     "name": "Attributes Convert Tool",
-    "author": "Takeshi",
+    "author": "Takeshi Chō",
     "version": (1, 0),
     "blender": (3, 0, 0),
     "location": "PROPERTIES > OBJECT DATA > ATTRIBUTES TO UVS",
@@ -13,8 +13,8 @@ bl_info = {
 import bpy
 
 
-class Attributes_Bake(bpy.types.Operator):
-    """Bake acitive atrritute into active uv"""
+class AttributesBake(bpy.types.Operator):
+    """Bake active attribute into active uv"""
     bl_idname = "object.attributes_bake"
     bl_label = "Bake"
   
@@ -27,21 +27,21 @@ class Attributes_Bake(bpy.types.Operator):
         obj = context.object
         mesh_data = obj.data
         
-        attri_name = mesh_data.attributes.active.name
-        attri = mesh_data.attributes.get(attri_name)
+        attribute_name: str = mesh_data.attributes.active.name
+        attribute = mesh_data.attributes.get(attribute_name)
         
-        uv_name = mesh_data.uv_layers.active.name
+        uv_name: str = mesh_data.uv_layers.active.name
         uv = mesh_data.uv_layers.get(uv_name)
         
-        for i , j in attri.data.items():
-            uv.data[i].uv[0] = j.vector[0]
-            uv.data[i].uv[1] = j.vector[1]
+        for i , attribute_item in attribute.data.items():
+            uv.data[i].uv[0] = attribute_item.vector[0]
+            uv.data[i].uv[1] = attribute_item.vector[1]
             
         return {'FINISHED'}
 
     
-class Attributes_To_UVs(bpy.types.Panel):
-    """Bake the atrritutes in face corner into the UVs"""
+class AttributesToUVs(bpy.types.Panel):
+    """Bake the attributes in face corner into the UVs"""
     bl_label = "Attributes To UVs"
     bl_idname = "Attributes_To_UVs"
     bl_space_type = 'PROPERTIES'
@@ -58,11 +58,11 @@ class Attributes_To_UVs(bpy.types.Panel):
         
         if mesh_data.attributes.active and mesh_data.uv_layers.active:
             
-            attri_name = mesh_data.attributes.active.name  
+            attribute_name: str = mesh_data.attributes.active.name  
             uv_name = mesh_data.uv_layers.active.name
         
             row = layout.row()
-            row.label(text = 'Source Attribute: '+attri_name, icon='SNAP_VERTEX')      
+            row.label(text = 'Source Attribute: '+attribute_name, icon='SNAP_VERTEX')      
             
             row = layout.row()
             row.label(text = 'Destination UV: '+uv_name, icon='GROUP_UVS')
@@ -74,12 +74,12 @@ class Attributes_To_UVs(bpy.types.Panel):
 #    self.layout.operator(Attributes_Bake.bl_idname, text=Attributes_Bake.bl_label)
 
 def register():
-    bpy.utils.register_class(Attributes_To_UVs)
-    bpy.utils.register_class(Attributes_Bake)
+    bpy.utils.register_class(AttributesToUVs)
+    bpy.utils.register_class(AttributesBake)
 
 def unregister():
-    bpy.utils.unregister_class(Attributes_To_UVs)
-    bpy.utils.unregister_class(Attributes_Bake)
+    bpy.utils.unregister_class(AttributesToUVs)
+    bpy.utils.unregister_class(AttributesBake)
 
 if __name__ == "__main__":
     register()
