@@ -11,12 +11,16 @@ bl_info = {
 }
 
 import bpy
+from bpy.types import (Operator,Panel,Menu)
 
 
-class AttributesBake(bpy.types.Operator):
+class AttributesBake(Operator):
     """Bake active attribute into active uv"""
     bl_idname = "object.attributes_bake"
     bl_label = "Bake"
+    
+    channel_x: bpy.props.IntProperty(default=0)
+    channel_y: bpy.props.IntProperty(default=1)
   
     @classmethod
     def poll(cls, context):
@@ -34,21 +38,19 @@ class AttributesBake(bpy.types.Operator):
         uv = mesh_data.uv_layers.get(uv_name)
         
         for i , attribute_item in attribute.data.items():
-            uv.data[i].uv[0] = attribute_item.vector[0]
-            uv.data[i].uv[1] = attribute_item.vector[1]
+            uv.data[i].uv[0] = attribute_item.vector[self.channel_x]
+            uv.data[i].uv[1] = attribute_item.vector[self.channel_y]
             
         return {'FINISHED'}
 
     
-class AttributesToUVs(bpy.types.Panel):
+class AttributesToUVs(Panel):
     """Bake the attributes in face corner into the UVs"""
     bl_label = "Attributes To UVs"
     bl_idname = "Attributes_To_UVs"
     bl_space_type = 'PROPERTIES'
     bl_region_type = 'WINDOW'
     bl_context = "data"
-        
-        
 
     def draw(self, context):
         layout = self.layout
@@ -68,18 +70,29 @@ class AttributesToUVs(bpy.types.Panel):
             row.label(text = 'Destination UV: '+uv_name, icon='GROUP_UVS')
             
             row = layout.row()
-            row.operator("object.attributes_bake")
-        
-#def menu_func(self, context):
-#    self.layout.operator(Attributes_Bake.bl_idname, text=Attributes_Bake.bl_label)
+            row.prop(obj,"channel_x")
+            row.label(text = 'Bake Into UV Channel X')
+            
+            row = layout.row()
+            row.prop(obj,"channel_y")
+            row.label(text = 'Bake Into UV Channel Y')
+            
+            row = layout.row()
+            bake_ops = row.operator("object.attributes_bake")
+            bake_ops.channel_x = obj.channel_x
+            bake_ops.channel_y = obj.channel_y
+            
 
 def register():
     bpy.utils.register_class(AttributesToUVs)
     bpy.utils.register_class(AttributesBake)
+    bpy.types.Object.channel_x = bpy.props.IntProperty(name='Source Channel',default=0,min=0,max=2)
+    bpy.types.Object.channel_y = bpy.props.IntProperty(name='Source Channel',default=0,min=0,max=2)
 
 def unregister():
     bpy.utils.unregister_class(AttributesToUVs)
     bpy.utils.unregister_class(AttributesBake)
-
+    del bpy.types.Object.channel_x
+    del bpy.types.Object.channel_y
 if __name__ == "__main__":
     register()
