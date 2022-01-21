@@ -11,39 +11,42 @@ bl_info = {
 }
 
 import bpy
-from bpy.types import (Operator,Panel,Menu)
+from bpy.types import (Operator, Panel)
 
 
 class AttributesBake(Operator):
     """Bake active attribute into active uv"""
     bl_idname = "object.attributes_bake"
     bl_label = "Bake"
-    
-    channel_x: bpy.props.IntProperty(default=0)
-    channel_y: bpy.props.IntProperty(default=1)
-  
+
+    edit_channel_x: bpy.props.BoolProperty(default=True)
+    edit_channel_y: bpy.props.BoolProperty(default=True)
+    channel_for_x: bpy.props.IntProperty(default=0)
+    channel_for_y: bpy.props.IntProperty(default=1)
+
     @classmethod
     def poll(cls, context):
         return context.active_object is not None
-        
-           
+
     def execute(self, context):
         obj = context.object
         mesh_data = obj.data
-        
+
         attribute_name: str = mesh_data.attributes.active.name
         attribute = mesh_data.attributes.get(attribute_name)
-        
+
         uv_name: str = mesh_data.uv_layers.active.name
         uv = mesh_data.uv_layers.get(uv_name)
-        
-        for i , attribute_item in attribute.data.items():
-            uv.data[i].uv[0] = attribute_item.vector[self.channel_x]
-            uv.data[i].uv[1] = attribute_item.vector[self.channel_y]
-            
+
+        for i, attribute_item in attribute.data.items():
+            if self.edit_channel_x:
+                uv.data[i].uv[0] = attribute_item.vector[self.channel_for_x]
+            if self.edit_channel_y:
+                uv.data[i].uv[1] = attribute_item.vector[self.channel_for_y]
+
         return {'FINISHED'}
 
-    
+
 class AttributesToUVs(Panel):
     """Bake the attributes in face corner into the UVs"""
     bl_label = "Attributes To UVs"
@@ -57,42 +60,80 @@ class AttributesToUVs(Panel):
 
         obj = context.object
         mesh_data = obj.data
-        
+
         if mesh_data.attributes.active and mesh_data.uv_layers.active:
-            
-            attribute_name: str = mesh_data.attributes.active.name  
+
+            attribute_name: str = mesh_data.attributes.active.name
+            attribute = mesh_data.attributes.get(attribute_name)
             uv_name = mesh_data.uv_layers.active.name
-        
+
             row = layout.row()
-            row.label(text = 'Source Attribute: '+attribute_name, icon='SNAP_VERTEX')      
-            
+            row.label(text='Source Attribute: ' + attribute_name, icon='SNAP_VERTEX')
+
             row = layout.row()
-            row.label(text = 'Destination UV: '+uv_name, icon='GROUP_UVS')
-            
+            row.label(text='Destination UV: ' + uv_name, icon='GROUP_UVS')
+
             row = layout.row()
-            row.prop(obj,"channel_x")
-            row.label(text = 'Bake Into UV Channel X')
+            row.label(text='Edit Destination UV Channels: ')
             
-            row = layout.row()
-            row.prop(obj,"channel_y")
-            row.label(text = 'Bake Into UV Channel Y')
+            col = layout.column()
+            col.prop(obj, "edit_channel_x")
+            col.prop(obj, "edit_channel_y")
             
+            isVectorAttribute = len(attribute.data.items()[1]) == 3        
+
+            #if isVectorAttribute:
+            if obj.edit_channel_x:
+                row = layout.row()
+                row.label(text='Destination X:')
+                row.prop(obj, "vector_channel_x")
+
+            if obj.edit_channel_y:
+                row = layout.row()
+                row.label(text='Destination Y:')
+                row.prop(obj, "vector_channel_y")
+
             row = layout.row()
             bake_ops = row.operator("object.attributes_bake")
-            bake_ops.channel_x = obj.channel_x
-            bake_ops.channel_y = obj.channel_y
-            
+            bake_ops.edit_channel_x = obj.edit_channel_x
+            bake_ops.edit_channel_y = obj.edit_channel_y
+            bake_ops.channel_for_x = int(obj.vector_channel_x)
+            bake_ops.channel_for_y = int(obj.vector_channel_y)
+
+
+vector_channel = [
+    ("0", "X", "channel X", 0),
+    ("1", "Y", "channel Y", 1),
+    ("2", "Z", "channel Z", 2),
+]
+
+vector_2D_channel = [
+    ("0", "X", "channel X", 0),
+    ("1", "Y", "channel Y", 1),
+]
+
 
 def register():
     bpy.utils.register_class(AttributesToUVs)
     bpy.utils.register_class(AttributesBake)
-    bpy.types.Object.channel_x = bpy.props.IntProperty(name='Source Channel',default=0,min=0,max=2)
-    bpy.types.Object.channel_y = bpy.props.IntProperty(name='Source Channel',default=0,min=0,max=2)
+    bpy.types.Object.edit_channel_x = bpy.props.BoolProperty(name="X", default=True)
+    bpy.types.Object.edit_channel_y = bpy.props.BoolProperty(name="Y", default=True)
+    bpy.types.Object.vector_channel_x = bpy.props.EnumProperty(items=vector_channel, name='Source', default="0")
+    bpy.types.Object.vector_channel_y = bpy.props.EnumProperty(items=vector_channel, name='Source', default="1")
+    bpy.types.Object.vector_2D_channel_x = bpy.props.EnumProperty(items=vector_channel, name='Source', default="0")
+    bpy.types.Object.vector_2D_channel_y = bpy.props.EnumProperty(items=vector_channel, name='Source', default="1")
+
 
 def unregister():
-    bpy.utils.unregister_class(AttributesToUVs)
+    del bpy.types.Object.vector_2D_channel_y
+    del bpy.types.Object.vector_2D_channel_x
+    del bpy.types.Object.vector_channel_y
+    del bpy.types.Object.vector_channel_x
+    del bpy.types.Object.edit_channel_y
+    del bpy.types.Object.edit_channel_x
     bpy.utils.unregister_class(AttributesBake)
-    del bpy.types.Object.channel_x
-    del bpy.types.Object.channel_y
+    bpy.utils.unregister_class(AttributesToUVs)
+
+
 if __name__ == "__main__":
     register()
