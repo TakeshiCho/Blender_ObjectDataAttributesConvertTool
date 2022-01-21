@@ -72,31 +72,36 @@ class AttributesToUVs(Panel):
             col.label(text='Destination UV: ' + uv_name, icon='GROUP_UVS')
 
             layout.separator()
+
+            row = layout.row()
+            subrow = row.row(align=True)
+            subrow.scale_x = 1.3
+            subrow.alignment = 'RIGHT'
+            subrow.label(text='Edit Destination: ')
             
-            split = layout.split()
-            row = split.row()
-            row.label(text='Edit Destination: ')
-            
-            row = split.row(align=True)
-            row.prop(obj, "edit_channel_x")
-            row.prop(obj, "edit_channel_y")
+            subrow = row.row(align=True)
+            subrow.prop(obj, "edit_channel_x")
+            subrow.prop(obj, "edit_channel_y")
 
             isVectorAttribute = len(attribute.data.items()[1]) == 3
             
             split = layout.split()
             #if isVectorAttribute:
             
-            col = split.column(align=True)
+            row = layout.row()
+            col = row.column(align=True)
+            col.scale_x = 1.5
+            col.alignment = 'RIGHT'
             if obj.edit_channel_x:
                 col.label(text='Destination X:')
             if obj.edit_channel_y:
                 col.label(text='Destination Y:')
             
-            col = split.column(align=True)
+            col = row.column(align=True)
             if obj.edit_channel_x:
-                col.prop(obj, "vector_channel_x")
+                col.prop(obj, "vector_channel_x",text="")
             if obj.edit_channel_y:
-                col.prop(obj, "vector_channel_y")
+                col.prop(obj, "vector_channel_y",text="")
                 
             layout.separator()
             row = layout.row()
@@ -108,14 +113,14 @@ class AttributesToUVs(Panel):
 
 
 vector_channel = [
-    ("0", "X", "channel X", 0),
-    ("1", "Y", "channel Y", 1),
-    ("2", "Z", "channel Z", 2),
+    ("0", "Source.X", "channel X", 0),
+    ("1", "Source.Y", "channel Y", 1),
+    ("2", "Source.Z", "channel Z", 2),
 ]
 
 vector_2D_channel = [
-    ("0", "X", "channel X", 0),
-    ("1", "Y", "channel Y", 1),
+    ("0", "Source.X", "channel X", 0),
+    ("1", "Source.Y", "channel Y", 1),
 ]
 
 
@@ -124,10 +129,10 @@ def register():
     bpy.utils.register_class(AttributesBake)
     bpy.types.Object.edit_channel_x = bpy.props.BoolProperty(name="X", default=True)
     bpy.types.Object.edit_channel_y = bpy.props.BoolProperty(name="Y", default=True)
-    bpy.types.Object.vector_channel_x = bpy.props.EnumProperty(items=vector_channel, name='Source', default="0")
-    bpy.types.Object.vector_channel_y = bpy.props.EnumProperty(items=vector_channel, name='Source', default="1")
-    bpy.types.Object.vector_2D_channel_x = bpy.props.EnumProperty(items=vector_channel, name='Source', default="0")
-    bpy.types.Object.vector_2D_channel_y = bpy.props.EnumProperty(items=vector_channel, name='Source', default="1")
+    bpy.types.Object.vector_channel_x = bpy.props.EnumProperty(items=vector_channel, default="0")
+    bpy.types.Object.vector_channel_y = bpy.props.EnumProperty(items=vector_channel, default="1")
+    bpy.types.Object.vector_2D_channel_x = bpy.props.EnumProperty(items=vector_channel, default="0")
+    bpy.types.Object.vector_2D_channel_y = bpy.props.EnumProperty(items=vector_channel, default="1")
 
 
 def unregister():
