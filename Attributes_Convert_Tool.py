@@ -1,7 +1,7 @@
 bl_info = {
     "name": "Attributes Convert Tool",
     "author": "Takeshi Chō",
-    "version": (1, 0),
+    "version": (0, 0, 1),
     "blender": (3, 0, 0),
     "location": "PROPERTIES > OBJECT DATA > ATTRIBUTES TO UVS",
     "description": "Convert the Attributes in face corner to the UVs",
@@ -57,7 +57,7 @@ class AttributesToUVs(Panel):
 
     def draw(self, context):
         layout = self.layout
-
+        
         obj = context.object
         mesh_data = obj.data
 
@@ -67,32 +67,38 @@ class AttributesToUVs(Panel):
             attribute = mesh_data.attributes.get(attribute_name)
             uv_name = mesh_data.uv_layers.active.name
 
-            row = layout.row()
-            row.label(text='Source Attribute: ' + attribute_name, icon='SNAP_VERTEX')
+            col = layout.column(align=True)
+            col.label(text='Source Attribute: ' + attribute_name, icon='SNAP_VERTEX')
+            col.label(text='Destination UV: ' + uv_name, icon='GROUP_UVS')
 
-            row = layout.row()
-            row.label(text='Destination UV: ' + uv_name, icon='GROUP_UVS')
-
-            row = layout.row()
-            row.label(text='Edit Destination UV Channels: ')
+            layout.separator()
             
-            col = layout.column()
-            col.prop(obj, "edit_channel_x")
-            col.prop(obj, "edit_channel_y")
+            split = layout.split()
+            row = split.row()
+            row.label(text='Edit Destination: ')
             
-            isVectorAttribute = len(attribute.data.items()[1]) == 3        
+            row = split.row(align=True)
+            row.prop(obj, "edit_channel_x")
+            row.prop(obj, "edit_channel_y")
 
+            isVectorAttribute = len(attribute.data.items()[1]) == 3
+            
+            split = layout.split()
             #if isVectorAttribute:
+            
+            col = split.column(align=True)
             if obj.edit_channel_x:
-                row = layout.row()
-                row.label(text='Destination X:')
-                row.prop(obj, "vector_channel_x")
-
+                col.label(text='Destination X:')
             if obj.edit_channel_y:
-                row = layout.row()
-                row.label(text='Destination Y:')
-                row.prop(obj, "vector_channel_y")
-
+                col.label(text='Destination Y:')
+            
+            col = split.column(align=True)
+            if obj.edit_channel_x:
+                col.prop(obj, "vector_channel_x")
+            if obj.edit_channel_y:
+                col.prop(obj, "vector_channel_y")
+                
+            layout.separator()
             row = layout.row()
             bake_ops = row.operator("object.attributes_bake")
             bake_ops.edit_channel_x = obj.edit_channel_x
