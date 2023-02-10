@@ -26,7 +26,7 @@ class AttributesBake(Operator):
 
     @classmethod
     def poll(cls, context):
-        any_edit_channel: bool = context.object.edit_uv_channel_x or context.object.edit_uv_channel_y
+        any_edit_channel: bool = context.object.data.attributeSettings.edit_uv_channel_x or context.object.data.attributeSettings.edit_uv_channel_y
         return context.active_object is not None and any_edit_channel
 
     def execute(self, context):
@@ -56,16 +56,21 @@ class AttributesToUVs(Panel):
     bl_region_type = 'WINDOW'
     bl_context = "data"
 
+    @classmethod
+    def poll(cls, context):
+        obj = context.object
+        mesh_data = obj.data
+        is_mesh: bool = type(mesh_data).__name__ == 'Mesh'
+        return context.active_object is not None and is_mesh
+
     def draw(self, context):
         layout = self.layout
-        
         obj = context.object
         mesh_data = obj.data
 
         if mesh_data.attributes.active and mesh_data.uv_layers.active:
 
             attribute_name: str = mesh_data.attributes.active.name
-            attribute = mesh_data.attributes.get(attribute_name)
             uv_name = mesh_data.uv_layers.active.name
 
             col = layout.column(align=True)
@@ -74,45 +79,45 @@ class AttributesToUVs(Panel):
 
             layout.separator()
 
-            row_edit_channel = layout.row(align=True)          
+            row_edit_channel = layout.row(align=True)
             subrow = row_edit_channel.row(align=True)
             subrow.scale_x = 2
-            subrow.label(text='Edit Destination: ',icon = 'MODIFIER_ON')
-            
+            subrow.label(text='Edit Destination: ', icon='MODIFIER_ON')
+
             subrow = row_edit_channel.row(align=True)
             subrow.alignment = 'RIGHT'
             subrow.scale_x = 1
-            subrow.prop(obj, "edit_uv_channel_x")
-            subrow.prop(obj, "edit_uv_channel_y")
 
-            isVectorAttribute = len(attribute.data.items()[1]) == 3
-            #if isVectorAttribute:
-            draw_dest_scr_channel_options(obj, layout, "vector")
-                            
+            subrow.prop(mesh_data.attributeSettings, "edit_uv_channel_x")
+            subrow.prop(mesh_data.attributeSettings, "edit_uv_channel_y")
+
+            settings = mesh_data.attributeSettings
+            draw_dest_scr_channel_options(settings, layout, "vector")
+
             layout.separator()
             row = layout.row()
             bake_ops = row.operator("object.attributes_bake")
-            bake_ops.edit_uv_channel_x = obj.edit_uv_channel_x
-            bake_ops.edit_uv_channel_y = obj.edit_uv_channel_y
-            bake_ops.channel_for_x = int(obj.uv_x_to_attribute_vector)
-            bake_ops.channel_for_y = int(obj.uv_y_to_attribute_vector)
-            
-    
-def draw_dest_scr_channel_options(obj, layout, var_type: str):
+            bake_ops.edit_uv_channel_x = settings.edit_uv_channel_x
+            bake_ops.edit_uv_channel_y = settings.edit_uv_channel_y
+            bake_ops.channel_for_x = int(settings.uv_x_to_attribute_vector)
+            bake_ops.channel_for_y = int(settings.uv_y_to_attribute_vector)
+
+
+def draw_dest_scr_channel_options(settings, layout, var_type: str):
     row_dest_scr_select = layout.row(align=True)
-    
-    col = row_dest_scr_select.column(align=True)            
-    if obj.edit_uv_channel_x:
+
+    col = row_dest_scr_select.column(align=True)
+    if settings.edit_uv_channel_x:
         col.label(text='Destination.X:', icon='GROUP_UVS')
-    if obj.edit_uv_channel_y:
+    if settings.edit_uv_channel_y:
         col.label(text='Destination.Y:', icon='GROUP_UVS')
-        
+
     col = row_dest_scr_select.column(align=True)
     col.scale_x = 1.25
-    if obj.edit_uv_channel_x:
-        col.prop(obj, "uv_x_to_attribute_"+var_type, text="", icon='OUTLINER_DATA_MESH')
-    if obj.edit_uv_channel_y:
-        col.prop(obj, "uv_y_to_attribute_"+var_type, text="", icon='OUTLINER_DATA_MESH')
+    if settings.edit_uv_channel_x:
+        col.prop(settings, "uv_x_to_attribute_"+var_type, text="", icon='OUTLINER_DATA_MESH')
+    if settings.edit_uv_channel_y:
+        col.prop(settings, "uv_y_to_attribute_"+var_type, text="", icon='OUTLINER_DATA_MESH')
 
 
 vector_channel = [
@@ -127,24 +132,25 @@ vector_2D_channel = [
 ]
 
 
+class AttributesToUVsSettings(bpy.types.PropertyGroup):
+    edit_uv_channel_x: bpy.props.BoolProperty(name="X", default=True)
+    edit_uv_channel_y: bpy.props.BoolProperty(name="Y", default=True)
+    uv_x_to_attribute_vector: bpy.props.EnumProperty(items=vector_channel, name='Source Channel',default="0")
+    uv_y_to_attribute_vector: bpy.props.EnumProperty(items=vector_channel, name='Source Channel', default="1")
+    uv_x_to_attribute_vector_2D: bpy.props.EnumProperty(items=vector_channel, name='Source Channel', default="0")
+    uv_y_to_attribute_vector_2D: bpy.props.EnumProperty(items=vector_channel, name='Source Channel', default="1")
+
+
 def register():
     bpy.utils.register_class(AttributesToUVs)
     bpy.utils.register_class(AttributesBake)
-    bpy.types.Object.edit_uv_channel_x = bpy.props.BoolProperty(name="X", default=True)
-    bpy.types.Object.edit_uv_channel_y = bpy.props.BoolProperty(name="Y", default=True)
-    bpy.types.Object.uv_x_to_attribute_vector = bpy.props.EnumProperty(items=vector_channel, name='Source Channel',default="0")
-    bpy.types.Object.uv_y_to_attribute_vector = bpy.props.EnumProperty(items=vector_channel, name='Source Channel', default="1")
-    bpy.types.Object.uv_x_to_attribute_vector_2D = bpy.props.EnumProperty(items=vector_channel, name='Source Channel', default="0")
-    bpy.types.Object.uv_y_to_attribute_vector_2D = bpy.props.EnumProperty(items=vector_channel, name='Source Channel', default="1")
+    bpy.utils.register_class(AttributesToUVsSettings)
+    bpy.types.Mesh.attributeSettings = bpy.props.PointerProperty(type=AttributesToUVsSettings)
 
 
 def unregister():
-    del bpy.types.Object.uv_y_to_attribute_vector_2D
-    del bpy.types.Object.uv_x_to_attribute_vector_2D
-    del bpy.types.Object.uv_y_to_attribute_vector
-    del bpy.types.Object.uv_x_to_attribute_vector
-    del bpy.types.Object.edit_uv_channel_y
-    del bpy.types.Object.edit_uv_channel_x
+    del bpy.types.Mesh.attributeSettings
+    bpy.utils.unregister_class(AttributesToUVsSettings)
     bpy.utils.unregister_class(AttributesBake)
     bpy.utils.unregister_class(AttributesToUVs)
 
